@@ -19,18 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         image_name:
-          - bazzite
-          - bazzite-nvidia
-          - bazzite-gnome
-          - bazzite-gnome-nvidia
           - bazzite-deck
-          - bazzite-deck-gnome
-          - bazzite-ally
-          - bazzite-ally-gnome
-          - bazzite-asus
-          - bazzite-gnome-asus
-          - bazzite-asus-nvidia
-          - bazzite-gnome-asus-nvidia
         major_version: [40]
     steps:
 
@@ -84,7 +73,7 @@ jobs:
         shell: bash
         run: |
           set -ex
-          image="ghcr.io/ublue-os/${{ matrix.image_name }}:${{ steps.generate-tag.outputs.tag }}"
+          image="ghcr.io/liuyangos/${{ matrix.image_name }}:${{ steps.generate-tag.outputs.tag }}"
           # Make temp space
           TEMP_FLATPAK_INSTALL_DIR=$(mktemp -d -p ${{ github.workspace }} flatpak.XXX)
           # Get list of refs from directory
@@ -116,11 +105,11 @@ jobs:
         with:
           arch: x86_64
           image_name: ${{ matrix.image_name }}
-          image_repo: ghcr.io/ublue-os
+          image_repo: ghcr.io/liuyangos
           variant: 'Kinoite'
           version: ${{ matrix.major_version }}
           image_tag: ${{ steps.generate-tag.outputs.tag }}
-          secure_boot_key_url: 'https://github.com/ublue-os/akmods/raw/main/certs/public_key.der'
+          #secure_boot_key_url: 'https://github.com/ublue-os/akmods/raw/main/certs/public_key.der'
           enrollment_password: 'ublue-os'
           iso_name: ${{ matrix.image_name }}-${{ steps.generate-tag.outputs.tag }}.iso
           enable_cache_dnf: "false"
@@ -141,8 +130,6 @@ jobs:
           echo "iso-upload-dir=${ISO_UPLOAD_DIR}" >> $GITHUB_OUTPUT
 
       - name: Upload ISOs and Checksum to Job Artifacts
-        if: github.ref_name == 'testing'
-        #if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.image_name }}-${{ steps.generate-tag.outputs.tag }}-${{ matrix.major_version}}
@@ -151,19 +138,3 @@ jobs:
           retention-days: 0
           compression-level: 0
           overwrite: true
-
-      - name: Upload ISOs and Checksum to R2
-        if: github.event_name == 'workflow_dispatch' && github.ref_name == 'main'
-        shell: bash
-        env:
-          RCLONE_CONFIG_R2_TYPE: s3
-          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
-          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          RCLONE_CONFIG_R2_REGION: auto
-          RCLONE_CONFIG_R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          SOURCE_DIR: ${{ steps.upload-directory.outputs.iso-upload-dir }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rclone
-          rclone copy $SOURCE_DIR R2:bazzite
