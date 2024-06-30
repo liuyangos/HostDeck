@@ -1,0 +1,24 @@
+diff --git a/usr/lib/hwsupport/steamos-automount.sh b/usr/lib/hwsupport/steamos-automount.sh
+index 0f31509..1c64336 100755
+--- a/usr/lib/hwsupport/steamos-automount.sh
++++ b/usr/lib/hwsupport/steamos-automount.sh
+@@ -3,6 +3,8 @@
+ set -euo pipefail
+ 
+ source /etc/default/steamos-btrfs
++IMAGE_INFO="/usr/share/ublue-os/image-info.json"
++BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
+ 
+ . /usr/libexec/hwsupport/common-functions
+ 
+@@ -174,6 +176,10 @@ do_mount()
+             ;;
+     esac
+ 
++    if [[ $BASE_IMAGE_NAME =~ "silverblue" ]]; then
++        touch "${mount_point}/.trackerignore"
++    fi
++
+     #### SteamOS Btrfs Begin ####
+     if [[ "${ID_FS_TYPE}" == "btrfs" ]]; then
+         # Workaround for for Steam compression bug

@@ -1,0 +1,203 @@
+#!/usr/bin/bash
+
+IMAGE_INFO="/usr/share/ublue-os/image-info.json"
+IMAGE_NAME=$(jq -r '."image-name"' < $IMAGE_INFO)
+IMAGE_BRANCH=$(jq -r '."image-branch"' < $IMAGE_INFO)
+IMAGE_FLAVOR=$(jq -r '."image-flavor"' < $IMAGE_INFO)
+FEDORA_VERSION=$(jq -r '."fedora-version"' < $IMAGE_INFO)
+
+# SCRIPT VERSION
+HWS_VER=39
+HWS_VER_FILE="/etc/bazzite/hws_version"
+HWS_VER_RAN=$(cat $HWS_VER_FILE)
+
+# IMAGE IDENTIFIERS
+KNOWN_IMAGE_NAME_FILE="/etc/bazzite/image_name"
+KNOWN_IMAGE_NAME=$(cat $KNOWN_IMAGE_NAME_FILE)
+KNOWN_IMAGE_BRANCH_FILE="/etc/bazzite/image_branch"
+KNOWN_IMAGE_BRANCH=$(cat $KNOWN_IMAGE_BRANCH_FILE)
+KNOWN_IMAGE_FLAVOR_FILE="/etc/bazzite/image_flavor"
+KNOWN_IMAGE_FLAVOR=$(cat $KNOWN_IMAGE_FLAVOR_FILE)
+KNOWN_FEDORA_VERSION_FILE="/etc/bazzite/fedora_version"
+KNOWN_FEDORA_VERSION=$(cat $KNOWN_FEDORA_VERSION_FILE)
+
+# GLOBAL
+SYS_ID="$(cat /sys/devices/virtual/dmi/id/product_name)"
+VEN_ID="$(cat /sys/devices/virtual/dmi/id/chassis_vendor)"
+CPU_VENDOR=$(grep "vendor_id" "/proc/cpuinfo" | uniq | awk -F": " '{ print $2 }')
+CPU_MODEL=$(grep "model name" "/proc/cpuinfo" | uniq | awk -F": " '{ print $2 }')
+MINIMUM_FREE_ZRAM=$(awk '/MemTotal/ {printf "%.0f", $2 * 0.01}' /proc/meminfo)
+CURRENT_FREE_ZRAM=$(sysctl vm.min_free_kbytes | awk '{print $3}')
+KARGS=$(rpm-ostree kargs)
+NEEDED_KARGS=()
+
+# KERNEL ARGUMENTS
+echo "Current kargs: $KARGS"
+
+if /usr/libexec/hwsupport/valve-hardware; then
+  echo "Checking for needed karg changes (Jupiter/Galileo)"
+
+  if [[ ! $KARGS =~ "amd_iommu" ]]; then
+    NEEDED_KARGS+=("--append-if-missing=amd_iommu=off")
+  fi
+
+  if [[ ! $KARGS =~ "amdgpu.gttsize" ]]; then
+    if [[ "$(awk '/MemTotal/{print $(NF-1)}' /proc/meminfo)" == "31664740" ]]; then
+      echo "32GB RAM Steam Deck detected"
+      NEEDED_KARGS+=("--append-if-missing=amdgpu.gttsize=16256")
+    else
+      NEEDED_KARGS+=("--append-if-missing=amdgpu.gttsize=8128")
+    fi
+  fi
+fi
+
+if [[ $IMAGE_NAME =~ "deck" && ":AOKZOE A1 AR07:" =~ ":$SYS_ID:" ]]; then
+  echo "AOKZOE A1 on deck build detected, fixing edid"
+  if [[ ! $KARGS =~ "drm.edid_firmware" ]]; then
+    NEEDED_KARGS+=("--append-if-missing=drm.edid_firmware=eDP-1:edid/aokzoea1ar07_edid.bin")
+  fi
+fi
+
+if [[ ":Framework:" =~ ":$VEN_ID:" ]]; then
+  if [[ "GenuineIntel" == "$CPU_VENDOR" ]]; then
+    if [[ ! $KARGS =~ "hid_sensor_hub" ]]; then
+      echo "Intel Framework Laptop detected, applying needed keyboard fix"
+      NEEDED_KARGS+=("--append-if-missing=module_blacklist=hid_sensor_hub");
+    fi
+  fi
+fi
+
+if [[ ":83E1:" =~ ":$SYS_ID:" ]]; then
+  if [[ ! $KARGS =~ "video" ]]; then
+    echo "Adding panel orientation for Lenovo Legion Go"
+    NEEDED_KARGS+=("--append-if-missing=video=eDP-1:panel_orientation=left_side_up")
+  fi
+  if [[ ! $KARGS =~ "amdgpu.gttsize" ]]; then
+    echo "Adding GTTSize for Lenovo Legion Go"
+    NEEDED_KARGS+=("--append-if-missing=amdgpu.gttsize=8128")
+  fi
+  if [[ ! $KARGS =~ "amdgpu.sg_display" ]]; then
+    echo "Adding SG Display for Lenovo Legion Go"
+    NEEDED_KARGS+=("--append-if-missing=amdgpu.sg_display=0")
+  fi
+elif [[ ":ROG Ally RC71L_RC71L:ROG Ally RC71L:" =~ ":$SYS_ID:" ]]; then
+  if [[ ! $KARGS =~ "amdgpu.gttsize" ]]; then
+    echo "Adding GTTSize for ASUS Ally"
+    NEEDED_KARGS+=("--append-if-missing=amdgpu.gttsize=8128")
+  fi
+  if [[ ! $KARGS =~ "amdgpu.sg_display" ]]; then
+    echo "Adding SG Display for ASUS Ally"
+    NEEDED_KARGS+=("--append-if-missing=amdgpu.sg_display=0")
+  fi
+elif [[ ":G1617-01:" =~ ":$SYS_ID:" && ! $CPU_MODEL =~ 8640U|8840U ]]; then
+  if [[ ! $KARGS =~ "video" ]]; then
+    echo "Adding panel orientation for GPD Win Mini 2023"
+    NEEDED_KARGS+=("--append-if-missing=video=eDP-1:panel_orientation=right_side_up")
+  fi
+elif [[ ":WIN2:" =~ ":$SYS_ID:" ]]; then
+  if [[ ! $KARGS =~ "video" ]]; then
+    echo "Adding panel orientation for GPD Win 2"
+    NEEDED_KARGS+=("--append-if-missing=video=eDP-1:panel_orientation=right_side_up")
+  fi
+fi
+
+if /usr/libexec/hwsupport/simpledeckytdp-supported-hardware; then
+  if [[ ! $KARGS =~ "iomem" ]]; then
+    echo "Adding needed kargs for ryzenadj"
+    NEEDED_KARGS+=("--append-if-missing=iomem=relaxed")
+  fi
+fi
+
+if [[ $KARGS =~ "nomodeset" ]]; then
+  echo "Removing nomodeset"
+  NEEDED_KARGS+=("--delete-if-present=nomodeset")
+fi
+
+if [[ ! $KARGS =~ "gpu_sched.sched_policy" && ! $IMAGE_FLAVOR =~ "nvidia" ]]; then
+  echo "Fixing GPU scheduler default"
+  NEEDED_KARGS+=("--append-if-missing=gpu_sched.sched_policy=0")
+fi
+
+if [[ -n "$NEEDED_KARGS" ]]; then
+  echo "Found needed karg changes, applying the following: ${NEEDED_KARGS[*]}"
+  plymouth display-message --text="Updating kargs - Please wait, this may take a while" || true
+  rpm-ostree kargs ${NEEDED_KARGS[*]} --reboot || exit 1
+else
+  echo "No karg changes needed"
+fi
+
+if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" || $IMAGE_NAME =~ "framegame" ]]; then
+  if /usr/libexec/hwsupport/valve-hardware; then
+    if [[ ":Jupiter:" =~ ":$SYS_ID:" ]]; then
+      RESOLUTION=$(lshw -json -c display | jq -r .[]."configuration"."resolution")
+      if [[ "${RESOLUTION}" = "1200,1920" ]]; then
+        echo "Jupiter with DeckHD detected, disabling BIOS updates..."
+        systemctl disable --now jupiter-biosupdate.service
+      elif [[ "$(awk '/MemTotal/{print $(NF-1)}' /proc/meminfo)" == "31664740" ]]; then
+        echo "Jupiter with 32GB RAM detected, disabling BIOS updates..."
+        systemctl disable --now jupiter-biosupdate.service
+      fi
+    fi
+
+    systemctl enable --now jupiter-fan-control.service
+    systemctl enable --now vpower.service
+  else
+    echo "Generic device detected. Performing setup..."
+    systemctl disable --now jupiter-fan-control.service
+    systemctl disable --now vpower.service
+    systemctl disable --now jupiter-biosupdate.service
+    systemctl disable --now jupiter-controller-update.service
+    systemctl disable --now ryzenadj.service
+    systemctl disable --now batterylimit.service
+  fi
+  systemctl enable --now ds-inhibit.service
+fi
+
+# FSTAB CONFIGURATION
+if [[ ! -e /etc/ublue-os/.fstab_adjusted.flag && $(grep "compress=zstd" /etc/fstab) ]]; then
+    echo "Applying fstab param adjustments"
+    if grep -q '64GB' <<< "$(lsblk -o MODEL)"; then
+        echo "64GB eMMC detected"
+        sed -i 's/compress=zstd:1/noatime,lazytime,discard=sync,compress-force=zstd:3,space_cache=v2/g' /etc/fstab
+    else
+        sed -i 's/compress=zstd:1/noatime,lazytime,commit=120,discard=async,compress-force=zstd:1,space_cache=v2/g' /etc/fstab
+    fi
+    touch /etc/ublue-os/.fstab_adjusted.flag
+else
+    echo "No fstab param adjustments needed"
+fi
+
+# ZRAM MINIMUM-FREE CONFIGURATION
+echo "Current minimum-free ZRAM value: $CURRENT_FREE_ZRAM"
+
+if ((MINIMUM_FREE_ZRAM > CURRENT_FREE_ZRAM)); then
+    sysctl -w "vm.min_free_kbytes=${MINIMUM_FREE_ZRAM}"
+    echo "Found needed minimum-free ZRAM changes, applying the following: ${MINIMUM_FREE_ZRAM}"
+else
+  echo "No minimum-free ZRAM changes needed"
+fi
+
+# WAYDROID FIX
+if [[ -f "/var/lib/waydroid/lxc/waydroid/config" ]]; then
+  echo "Removing unneeded apparmor entry from Waydroid LXC"
+  sed -i '/lxc\.apparmor\.profile\s*=\s*unconfined/d' "/var/lib/waydroid/lxc/waydroid/config"
+fi
+
+# HOSTNAME FIX
+# If the hostname is too long Distrobox will fail during setup
+# Let's check the length and reset it to something sensible if that happens.
+if (( $(hostname | wc -m) > 20 )); then
+  hostnamectl set-hostname bazzite
+fi
+
+# Set default target to graphical, fixes rebase from base image
+if grep -qv "graphical.target" <<< "$(systemctl get-default)"; then
+  systemctl set-default graphical.target
+fi
+
+mkdir -p /etc/bazzite
+echo $HWS_VER > $HWS_VER_FILE
+echo $IMAGE_NAME > $KNOWN_IMAGE_NAME_FILE
+echo $IMAGE_FLAVOR > $KNOWN_IMAGE_FLAVOR_FILE
+echo $FEDORA_VERSION > $KNOWN_FEDORA_VERSION_FILE
+echo $IMAGE_BRANCH > $KNOWN_IMAGE_BRANCH_FILE
