@@ -1,5 +1,5 @@
 [Unit]
-Description=Return to Gaming Mode
+Description=Return to HostTest
 
 [Service]
 Type=oneshot

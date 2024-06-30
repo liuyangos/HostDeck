@@ -41,23 +41,4 @@
      d="m 107.5,214.33 c -3.333,-1.924 -3.333,-6.736 0,-8.66 l 21,-12.124 c 3.333,-1.925 7.5,0.481 7.5,4.33 v 24.248 c 0,3.849 -4.167,6.255 -7.5,4.33 z"
      fill="#ffffff"
      id="path7" />
-  <defs
-     id="defs8">
-    <linearGradient
-       id="paint0_linear_1016_105"
-       x1="50"
-       y1="50"
-       x2="550"
-       y2="550"
-       gradientUnits="userSpaceOnUse">
-      <stop
-         offset="0.0684898"
-         stop-color="#0047AB"
-         id="stop7" />
-      <stop
-         offset="0.741212"
-         stop-color="#8A2BE2"
-         id="stop8" />
-    </linearGradient>
-  </defs>
 </svg>
