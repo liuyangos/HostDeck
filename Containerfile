@@ -666,7 +666,6 @@ RUN rpm-ostree install \
     steamdeck-dsp \
     powerbuttond \
     hhd \
-    hhd-ui \
     adjustor \
     vpower \
     ds-inhibit \
