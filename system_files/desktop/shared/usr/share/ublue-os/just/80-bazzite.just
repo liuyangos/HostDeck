@@ -1,7 +1,7 @@
 # vim: set ft=make :
 
 # Restore the default Terminal
-restore-original-terminal:
+_restore-original-terminal:
     #!/usr/bin/bash
     IMAGE_INFO="/usr/share/ublue-os/image-info.json"
     BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
@@ -28,16 +28,20 @@ _install-system-flatpaks:
         FLATPAKS="kde_flatpaks/flatpaks"
     fi
     FLATPAK_LIST="$(curl https://raw.githubusercontent.com/ublue-os/bazzite/main/installer/${FLATPAKS} | tr '\n' ' ')"
-    flatpak --system -y install ${FLATPAK_LIST}
+    flatpak --system -y install --or-update ${FLATPAK_LIST}
 
-# Install Bazzite's Steam Game Mode Startup Video
+# Install Bazzite's Steam Game Mode Startup & Suspend Videos
 install-gamemode-video:
     mkdir -p $HOME/.local/share/Steam/config/uioverrides/movies
     rm -f $HOME/.local/share/Steam/config/uioverrides/movies/deck_startup.webm
+    rm -f $HOME/.local/share/Steam/config/uioverrides/movies/deck-suspend-animation.webm
+    rm -f $HOME/.local/share/Steam/config/uioverrides/movies/deck-suspend-animation-from-throbber.webm
     cp /usr/share/ublue-os/bazzite/bazzite.webm $HOME/.local/share/Steam/config/uioverrides/movies/deck_startup.webm
+    cp /usr/share/ublue-os/bazzite/bazzite-suspend.webm $HOME/.local/share/Steam/config/uioverrides/movies/deck-suspend-animation.webm
+    cp /usr/share/ublue-os/bazzite/bazzite-suspend.webm $HOME/.local/share/Steam/config/uioverrides/movies/deck-suspend-animation-from-throbber.webm
 
 # Force-enable AMD pstate
-pstate-force-enable:
+_pstate-force-enable:
     rpm-ostree kargs --append-if-missing=amd_pstate=active
 
 # Configure grub bootmenu visibility and fix duplicate entries
@@ -141,42 +145,6 @@ configure-watchdog ACTION="":
       rpm-ostree kargs $WATCHDOG_KARGS
     fi
 
-# Set the default powerprofile to load when the desktop starts
-configure-powerprofile ACTION="":
-    #!/usr/bin/bash
-    source /usr/lib/ujust/ujust.sh
-    OPTION={{ ACTION }}
-    if [ "$OPTION" == "help" ]; then
-      echo "Usage: ujust configure-powerprofile <option>"
-      echo "  <option>: Specify the quick option to skip the prompt"
-      echo "  Use 'powersave' to select Powersave"
-      echo "  Use 'balanced' to select Balanced"
-      exit 0
-    elif [ "$OPTION" == "" ]; then
-      # Cleanup old method
-      if [ -f "~/.config/autostart/bazzite-powersave.desktop" ]; then
-        rm ~/.config/autostart/bazzite-powersave.desktop
-      fi
-      # New method from here on
-      echo "${bold}Power profile configuration${normal}"
-      echo "This lets you set the default power profile."
-      echo "We do not recommend changing this from ${b}Balanced${n} if you use this device primarily for gaming!"
-      echo "If you have any performance or audio related issues..."
-      echo "${invert}${b}Please test with the default power profile set to Balanced${n} before reporting!"
-      echo ""
-      echo "Which power profile do you want to use when the desktop loads?"
-      OPTION=$(Choose "Powersave" "Balanced")
-    fi
-    if [[ "${OPTION,,}" =~ powersave ]]; then
-      echo "Setting default powerprofile to ${b}Powersave${n}"
-      sudo sed -iE 's/default=(.+)/default=power-saver/' /etc/tuned/ppd.conf
-      /usr/libexec/bazzite-powersave
-    elif [[ "${OPTION,,}" =~ balanced ]]; then
-      echo "Setting default powerprofile to ${b}Balanced${n}"
-      sudo sed -iE 's/default=(.+)/default=balanced/' /etc/tuned/ppd.conf
-      /usr/libexec/bazzite-powersave 0
-    fi
-
 # Install and configure Decky Loader (https://github.com/SteamDeckHomebrew/decky-loader) and plugins for alternative handhelds
 setup-decky ACTION="":
     #!/usr/bin/bash
@@ -191,7 +159,6 @@ setup-decky ACTION="":
       echo "  <option>: Specify the quick option to skip the prompt"
       echo "  Use 'install' to select Install Decky"
       echo "  Use 'simpledeckytdp' to select Get SimpleDeckyTDP"
-      echo "  Use 'hhd-decky' to select Get HHD-decky"
       exit 0
     elif [ "$OPTION" == "" ]; then
       echo "${bold}Setup Decky Loader${normal}"
@@ -201,12 +168,15 @@ setup-decky ACTION="":
       OPTION=$(
         Choose \
         "Install Decky" \
-        "Get $(Urllink "https://github.com/aarron-lee/SimpleDeckyTDP" SimpleDeckyTDP)${n}" \
-        "Get $(Urllink "https://github.com/hhd-dev/hhd-decky" HHD-Decky)${n}"
+        "Get $(Urllink "https://github.com/aarron-lee/SimpleDeckyTDP" SimpleDeckyTDP)${n}"
         )
     fi
     if [[ "${OPTION,,}" =~ install ]]; then
       export HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
+      if [ ! -L "/home/deck" ] && [ ! -e "/home/deck" ]  && [ "$HOME" != "/home/deck" ]; then
+        echo "Making a /home/deck symlink to fix plugins that do not use environment variables."
+        sudo ln -sf "$HOME" /home/deck
+      fi
       curl -L https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh | sh
       sudo chcon -R -t bin_t $HOME/homebrew/services/PluginLoader
     elif [[ "${OPTION,,}" =~ simpledeckytdp ]]; then
@@ -220,16 +190,6 @@ setup-decky ACTION="":
       else
         echo 'Please install Decky Loader by running "ujust setup-decky install" first.'
       fi
-    elif [[ "${OPTION,,}" =~ hhd-decky ]]; then
-      if [[ -d $HOME/homebrew/plugins ]]; then
-        sudo rm -rf $HOME/homebrew/plugins/hhd-decky
-        curl -L $(curl -s https://api.github.com/repos/hhd-dev/hhd-decky/releases/latest | grep "browser_download_url" | cut -d '"' -f 4) -o /tmp/hhd-decky.tar.gz
-        sudo tar -xzf /tmp/hhd-decky.tar.gz -C $HOME/homebrew/plugins
-        rm /tmp/hhd-decky.tar.gz
-        echo 'Installed.'
-      else
-        echo 'Please install Decky Loader by running "ujust setup-decky install" first.'
-      fi
     fi
 
 # Ptyxis terminal transparency
@@ -238,7 +198,7 @@ ptyxis-transparency opacity="0.95":
     set -euxo pipefail
     if [[ -n "$(echo "{{ opacity }}" | grep -v '^[.0-9]*$')" ]]; then
       printf "Value must be numeric: %s.\n" "{{ opacity }}"
-    elif [[ $(echo "0<{{ opacity }} && 1>{{ opacity }}" | bc -q) -eq 1 ]]; then
+    elif [[ $(echo "0<{{ opacity }} && 1>={{ opacity }}" | bc -q) -eq 1 ]]; then
       raw="$(gsettings get org.gnome.Ptyxis profile-uuids)"
       uuids="$(sed -En 's|[^0-9a-z]*||g; s|([0-9a-z]{32})|\1\n|gp' <<<${raw})"
       for i in ${uuids}; do

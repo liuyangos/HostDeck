@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-if [ "${EUID:-$(id -u)}" -eq 0 ]; then
-  echo "Bazzite user setup ran as root user. Exiting."
+if [ "${EUID:-$(id -u)}" -lt 1000 ]; then
+  echo "Bazzite user setup ran as unsupported user. Exiting."
   exit 0
 fi
 
@@ -10,6 +10,7 @@ IMAGE_NAME=$(jq -r '."image-name"' < $IMAGE_INFO)
 BASE_IMAGE_NAME=$(jq -r '."base-image-name"' < $IMAGE_INFO)
 FEDORA_VERSION=$(jq -r '."fedora-version"' < $IMAGE_INFO)
 
+SYS_ID="$(/usr/libexec/hwsupport/sysid)"
 VEN_ID="$(cat /sys/devices/virtual/dmi/id/chassis_vendor)"
 
 # INIT
@@ -17,7 +18,7 @@ BAZZITE_CONFIG_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/bazzite"
 mkdir -p "$BAZZITE_CONFIG_DIR"
 
 # SCRIPT VERSION
-USER_SETUP_VER=33
+USER_SETUP_VER=36
 USER_SETUP_VER_FILE="$BAZZITE_CONFIG_DIR/version"
 USER_SETUP_FEDORA_VER_FILE="$BAZZITE_CONFIG_DIR/fedora_version"
 USER_SETUP_IMAGE_VER_FILE=$BAZZITE_CONFIG_DIR/image_name""
@@ -48,11 +49,6 @@ flatpak remote-modify --user --enable flathub
 
 # Handle privileged tasks
 pkexec /usr/libexec/bazzite-privileged-user-setup "$USER"
-
-# Refresh fontconfig
-if [[ -f "$HOME/.config/fontconfig" ]]; then
-  rm -rf "$HOME/.config/fontconfig"
-fi
 
 # Set up optional Gradience themes
 GRADIENCE_THEME_DIR="/usr/etc/skel/.var/app/com.github.GradienceTeam.Gradience/config/presets/user"
@@ -89,9 +85,6 @@ fi
 if [[ $BASE_IMAGE_NAME =~ "kinoite" ]]; then
   echo 'Running setup for Kinoite'
 
-  echo 'Enabling System76-Scheduler KWin script'
-  kwriteconfig5 --file kwinrc --group Plugins --key kwin-system76-scheduler-integrationEnabled true
-
   if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" || $IMAGE_NAME =~ "framegame" ]]; then
     echo 'Running setup for Kinoite on Steam Deck'
     if [[ ! -f "$HOME/Desktop/Return.desktop" ]]; then
@@ -103,28 +96,48 @@ if [[ $BASE_IMAGE_NAME =~ "kinoite" ]]; then
 else
   echo 'Running setup for Silverblue'
 
+  if [[ ":Framework:" =~ ":$VEN_ID:" ]]; then
+    if [[ ! -f "$BAZZITE_CONFIG_DIR/framework-initialized" ]]; then
+      echo 'Setting Framework logo menu'
+      dconf write /org/gnome/shell/extensions/Logo-menu/symbolic-icon true
+      dconf write /org/gnome/shell/extensions/Logo-menu/menu-button-icon-image 4
+      echo 'Adjusting OSD position'
+      dconf write /org/gnome/shell/extensions/just-perfection/osd-position 4
+      if [[ $SYS_ID == "Laptop ("* ]]; then
+        echo 'Applying font fix for Framework 13'
+        dconf write /org/gnome/desktop/interface/text-scaling-factor 1.25
+      fi
+      touch "$BAZZITE_CONFIG_DIR/framework-initialized"
+    fi
+  fi
+
+  if [[ ":83E1:" =~ ":$SYS_ID:" ]]; then
+      echo 'Setting Legion logo menu'
+      dconf write /org/gnome/shell/extensions/Logo-menu/symbolic-icon false
+      dconf write /org/gnome/shell/extensions/Logo-menu/menu-button-icon-image 31
+  fi
+
+  echo 'Setting up templates'
+  TEMPLATES_DIR=$(/usr/bin/xdg-user-dir TEMPLATES || true)
+  if [[ -z "$TEMPLATES_DIR" || "$TEMPLATES_DIR" == "$HOME" ]]; then
+    # xdg-user-dir might return only $HOME, in that case, use fallback $HOME/Templates.
+    echo "Using fallback '$HOME/Templates'"
+    TEMPLATES_DIR="$HOME/Templates"
+  fi
+  mkdir -p "$TEMPLATES_DIR"
+
+  if [[ ! -f "$TEMPLATES_DIR/vkBasalt.conf" && -f "/etc/vkBasalt.conf" ]]; then
+    ln -s "/etc/vkBasalt.conf" "$TEMPLATES_DIR/vkBasalt.conf"
+  fi
+  if [[ ! -f "$TEMPLATES_DIR/dxvk.conf" && -f "/etc/dxvk-example.conf" ]]; then
+    ln -s "/etc/dxvk-example.conf" "$TEMPLATES_DIR/dxvk.conf"
+  fi
+  if [[ ! -f "$TEMPLATES_DIR/MangoHud.conf" && -f "/usr/share/doc/mangohud/MangoHud.conf.example" ]]; then
+    ln -s "/usr/share/doc/mangohud/MangoHud.conf.example" "$TEMPLATES_DIR/MangoHud.conf"
+  fi
+
   if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" || $IMAGE_NAME =~ "framegame" ]]; then
     echo 'Running setup for Silverblue on Steam Deck'
-
-    if [[ ":Framework:" =~ ":$VEN_ID:" ]]; then
-      if [[ ! -f "$BAZZITE_CONFIG_DIR/framework-initialized" ]]; then
-        echo 'Enabling automatic power profile extension'
-        gnome-extensions enable power-profile-switcher@eliapasquali.github.io
-        echo 'Setting Framework logo menu'
-        dconf write /org/gnome/shell/extensions/Logo-menu/symbolic-icon true
-        dconf write /org/gnome/shell/extensions/Logo-menu/menu-button-icon-image 4
-        touch "$BAZZITE_CONFIG_DIR/framework-initialized"
-      fi
-    fi
-
-    echo 'Setting up templates'
-    mkdir -p "$HOME/Templates"
-    if [[ ! -f "$HOME/Templates/vkBasalt.conf" ]]; then
-      ln -s "/etc/vkBasalt.conf" "$HOME/Templates/vkBasalt.conf"
-    fi
-    if [[ ! -f "$HOME/Templates/dxvk.conf" ]]; then
-      ln -s "/etc/dxvk-example.conf" "$HOME/Templates/dxvk.conf"
-    fi
 
     echo 'Tweaking GNOME indexer'
     if [[ ! -f "$HOME/.steam/.trackerignore" ]]; then

@@ -56,6 +56,46 @@ install-openrazer:
     sudo usermod -a -G plugdev $USER && \
     echo "Please reboot to apply needed changes."
 
+# Install EmuDeck (https://www.emudeck.com/)
+install-emudeck:
+    #!/usr/bin/bash
+    if grep -q 'it.mijorus.gearlever' <<< $(flatpak list); then
+      wget \
+        $(curl -s https://api.github.com/repos/EmuDeck/emudeck-electron/releases/latest | \
+        jq -r ".assets[] | select(.name | test(\".*AppImage\")) | .browser_download_url") \
+        -O $HOME/Downloads/EmuDeck.AppImage
+      chmod +x $HOME/Downloads/EmuDeck.AppImage
+      flatpak run it.mijorus.gearlever $HOME/Downloads/EmuDeck.AppImage
+    else
+      wget \
+        $(curl -s https://api.github.com/repos/EmuDeck/emudeck-electron/releases/latest | \
+        jq -r ".assets[] | select(.name | test(\".*AppImage\")) | .browser_download_url") \
+        -O $HOME/Desktop/EmuDeck.AppImage
+      chmod +x $HOME/Desktop/EmuDeck.AppImage
+    fi
+
+# Install OpenRGB (https://openrgb.org/)
+install-openrgb:
+    #!/usr/bin/bash
+    if grep -q 'it.mijorus.gearlever' <<< $(flatpak list); then
+      wget https://openrgb.org/releases/release_0.9/OpenRGB_0.9_x86_64_b5f46e3.AppImage \
+        -O $HOME/Downloads/OpenRGB.AppImage
+      chmod +x $HOME/Downloads/OpenRGB.AppImage
+      flatpak run it.mijorus.gearlever $HOME/Downloads/OpenRGB.AppImage
+    else
+      wget https://openrgb.org/releases/release_0.9/OpenRGB_0.9_x86_64_b5f46e3.AppImage \
+        -O $HOME/Desktop/OpenRGB.AppImage
+      chmod +x $HOME/Desktop/OpenRGB.AppImage
+    fi
+
+# Install Boxtron, a Steam Play compatibility tool to run DOS games using native Linux DOSBox
+install-boxtron: distrobox-check-fedora
+    distrobox enter -n fedora -- bash -c '\
+      sudo dnf install dosbox-staging inotify-tools timidity++ fluid-soundfont-gm -y && \
+      cd ~/.steam/root/compatibilitytools.d/ && \
+      curl -L https://github.com/dreamer/boxtron/releases/download/v0.5.4/boxtron.tar.xz | tar xJf - && \
+      distrobox-export --bin /usr/bin/dosbox'
+
 alias get-wootility := install-wootility
 
 # Install Wootility for configuring Wooting Keyboards
@@ -109,7 +149,7 @@ install-opentabletdriver:
     if grep -qvz "arch" <<< $(distrobox list); then \
       Assemble noconfirmcreate "" "arch"; \
     fi && \
-    distrobox enter -n arch -- bash -c 'paru -S opentabletdriver --noconfirm' && \
+    distrobox enter -n arch -- bash -c 'paru -Syu --noconfirm && paru -S opentabletdriver --noconfirm' && \
     mkdir -p ~/.config/systemd/user/ && \
     rm -f ~/.config/systemd/user/arch-opentabletdriver.service && \
     wget https://raw.githubusercontent.com/ublue-os/bazzite/main/post_install_files/OpenTabletDriver/opentabletdriver.service -O ~/.config/systemd/user/arch-opentabletdriver.service && \

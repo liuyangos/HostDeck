@@ -7,12 +7,11 @@ app/com.github.tchx84.Flatseal/x86_64/stable
 app/io.github.flattool.Warehouse/x86_64/stable
 app/io.missioncenter.MissionCenter/x86_64/stable
 app/com.vysp3r.ProtonPlus/x86_64/stable
-app/io.github.celluloid_player.Celluloid/x86_64/stable
 app/org.gnome.Calculator/x86_64/stable
 app/org.gnome.Calendar/x86_64/stable
 app/org.gnome.Characters/x86_64/stable
 app/org.gnome.Contacts/x86_64/stable
-app/org.gnome.Evince/x86_64/stable
+app/org.gnome.Papers/x86_64/stable
 app/org.gnome.Logs/x86_64/stable
 app/org.gnome.Loupe/x86_64/stable
 app/org.gnome.NautilusPreviewer/x86_64/stable
@@ -21,6 +20,7 @@ app/org.gnome.Weather/x86_64/stable
 app/org.gnome.baobab/x86_64/stable
 app/org.gnome.clocks/x86_64/stable
 app/org.gnome.font-viewer/x86_64/stable
+app/io.github.nokse22.Exhibit/x86_64/stable
 runtime/org.freedesktop.Platform.VulkanLayer.MangoHud/x86_64/23.08
 runtime/org.freedesktop.Platform.VulkanLayer.vkBasalt/x86_64/23.08
 runtime/org.freedesktop.Platform.VulkanLayer.OBSVkCapture/x86_64/23.08

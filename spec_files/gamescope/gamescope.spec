@@ -2,11 +2,11 @@
 
 %global _default_patch_fuzz 2
 %global build_timestamp %(date +"%Y%m%d")
-%global gamescope_tag 3.14.11
+%global gamescope_tag 3.14.22
 
 Name:           gamescope
 Version:        100.%{gamescope_tag}
-Release:        %{autorelease}.bazzite
+Release:        8.bazzite
 Summary:        Micro-compositor for video games on Wayland
 
 License:        BSD
@@ -15,12 +15,9 @@ URL:            https://github.com/ValveSoftware/gamescope
 # Create stb.pc to satisfy dependency('stb')
 Source0:        stb.pc
 
-Patch0:         hardware.patch
-Patch1:         720p.patch
-Patch2:         disable-steam-touch-click-atom.patch
-Patch3:         external-rotation.patch
-Patch4:         panel-type.patch
-Patch5:         gestures.patch
+Patch0:         chimeraos.patch
+Patch1:         disable-steam-touch-click-atom.patch
+Patch2:         deckhd.patch
 
 BuildRequires:  meson >= 0.54.0
 BuildRequires:  ninja-build
@@ -29,11 +26,12 @@ BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  glm-devel
 BuildRequires:  google-benchmark-devel
-BuildRequires:  libeis-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libXcursor-devel
+BuildRequires:  libeis-devel
+BuildRequires:  pixman-devel
 BuildRequires:  pkgconfig(libdisplay-info)
-BuildRequires:  pkgconfig(libeis-1.0)
+BuildRequires:  pkgconfig(pixman-1)
 BuildRequires:  pkgconfig(x11)
 BuildRequires:  pkgconfig(xdamage)
 BuildRequires:  pkgconfig(xcomposite)
@@ -77,7 +75,8 @@ BuildRequires:  git
 # libliftoff hasn't bumped soname, but API/ABI has changed for 0.2.0 release
 Requires:       libliftoff%{?_isa} >= %{libliftoff_minver}
 Requires:       xorg-x11-server-Xwayland
-Requires:       gamescope-libs = %{version}
+Requires:       gamescope-libs = %{version}-%{release}
+Requires:       gamescope-libs(x86-32) = %{version}-%{release}
 Recommends:     mesa-dri-drivers
 Recommends:     mesa-vulkan-drivers
 
@@ -90,7 +89,7 @@ Summary:	libs for %{name}
 %summary
 
 %prep
-git clone --depth 1 --branch %{gamescope_tag} https://github.com/ValveSoftware/gamescope
+git clone --depth 1 --branch %{gamescope_tag} %{url}.git
 cd gamescope
 git submodule update --init --recursive
 mkdir -p pkgconfig
@@ -104,7 +103,7 @@ sed -i 's^../thirdparty/SPIRV-Headers/include/spirv/^/usr/include/spirv/^' src/m
 %build
 cd gamescope
 export PKG_CONFIG_PATH=pkgconfig
-%meson -Dpipewire=enabled -Ddrm_backend=enabled -Drt_cap=enabled -Davif_screenshots=enabled -Dinput_emulation=enabled -Dsdl2_backend=enabled -Dforce_fallback_for=vkroots
+%meson -Dpipewire=enabled -Dinput_emulation=enabled -Ddrm_backend=enabled -Drt_cap=enabled -Davif_screenshots=enabled -Dsdl2_backend=enabled
 %meson_build
 
 %install
@@ -114,7 +113,9 @@ cd gamescope
 %files
 %license gamescope/LICENSE
 %doc gamescope/README.md
-%attr(0755, root, root) %caps(cap_sys_nice=eip) %{_bindir}/gamescope
+%caps(cap_sys_nice=eip) %{_bindir}/gamescope
+%{_bindir}/gamescopectl
+%{_bindir}/gamescopestream
 
 %files libs
 %{_libdir}/libVkLayer_FROG_gamescope_wsi_*.so

@@ -1,5 +1,5 @@
 %define packagename jupiter-hw-support
-%define packagever jupiter-20240416.1
+%define packagever jupiter-3.6-20240624.1
 %global _default_patch_fuzz 2
 
 Name:           %{packagename}-btrfs
@@ -17,12 +17,11 @@ Patch2:         btrfs-automount.patch
 Patch3:         btrfs-format.patch
 Patch4:         user.patch
 Patch5:         bazzite-btrfs.patch
-Patch6:         systemd-run.patch
-Patch7:         priv-write.patch
-Patch8:         biosupdate.patch
-Patch9:         gnome.patch
-Patch10:        fstrim.patch
-Patch11:        cursor-path.patch
+Patch6:         priv-write.patch
+Patch7:         biosupdate.patch
+Patch8:         gnome.patch
+Patch9:         fstrim.patch
+Patch10:        cursor-path.patch
 
 Requires:       python3
 Requires:       python3-evdev
@@ -76,6 +75,7 @@ xcursorgen usr/share/steamos/steamos-cursor-config %{buildroot}%{_datadir}/icons
 rm %{buildroot}%{_datadir}/jupiter_bios_updater/h2offt-g
 rm %{buildroot}%{_datadir}/jupiter_bios_updater/H2OFFTx64-G.sh
 rm %{buildroot}%{_datadir}/steamos/steamos.png
+rm %{buildroot}%{_prefix}/lib/udev/rules.d/80-gpu-reset.rules
 rm -rf %{buildroot}%{_datadir}/jupiter_bios_updater/driver
 rm -rf %{buildroot}%{_unitdir}/multi-user.target.wants
 rm -rf %{buildroot}%{_datadir}/alsa

@@ -75,6 +75,5 @@ show-gamemode=false
 hide-forcequit=true
 show-boxbuddy=true
 
-[org/gnome/shell/extensions/power-profile-switcher]
-ac='balanced'
-bat='power-saver'
+[org/gnome/shell/extensions/appindicator]
+legacy-tray-enabled=false
