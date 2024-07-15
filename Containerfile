@@ -420,6 +420,7 @@ RUN rpm-ostree install \
         libobs_glcapture.i686 \
         mangohud.x86_64 \
         mangohud.i686 && \
+        ls -l /usr/bin/wine && \
     ln -s wine32 /usr/bin/wine && \
     ln -s wine32-preloader /usr/bin/wine-preloader && \
     ln -s wineserver64 /usr/bin/wineserver && \
