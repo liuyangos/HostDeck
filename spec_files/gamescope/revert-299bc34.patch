@@ -1,8 +1,8 @@
 diff --git a/src/steamcompmgr.cpp b/src/steamcompmgr.cpp
-index d7498e5..d1800a8 100644
+index 4216555..48c017d 100644
 --- a/src/steamcompmgr.cpp
 +++ b/src/steamcompmgr.cpp
-@@ -3271,7 +3271,7 @@ found:;
+@@ -3236,7 +3236,7 @@ found:;
  		if ( window_has_commits( focus ) ) 
  			out->focusWindow = focus;
  		else
@@ -11,7 +11,7 @@ index d7498e5..d1800a8 100644
  
  		// Always update X's idea of focus, but still dirty
  		// the it being outdated so we can resolve that globally later.
-@@ -5995,28 +5995,37 @@ bool handle_done_commit( steamcompmgr_win_t *w, xwayland_ctx_t *ctx, uint64_t co
+@@ -5963,28 +5963,37 @@ bool handle_done_commit( steamcompmgr_win_t *w, xwayland_ctx_t *ctx, uint64_t co
  			// Window just got a new available commit, determine if that's worth a repaint
  
  			// If this is an overlay that we're presenting, repaint

@@ -47,19 +47,9 @@ screens:
         Hide GRUB Menu:
           description: |
             NOTE: Press the escape key before boot to show the menu
-          default: true
+          default: false
           packages:
           - Hide GRUB: sudo -A ujust configure-grub hide
-        Install Game Mode Startup Video:
-          description: Adds a Bazzite themed startup video for Steam's game mode.
-          default: true
-          packages:
-          - Install Video: ujust install-gamemode-video
-        Fix Steam Download Speed:
-          description: Adds a config file that fixes download speed under Steam for Linux.
-          default: true
-          packages:
-          - Fix Download Speed: ujust fix-steam-download-speed
         Oversteer:
           description: Application to control supported steering wheels
           default: false
@@ -100,11 +90,6 @@ screens:
           default: true
           packages:
           - Install SteamCMD: ujust install-steamcmd
-        Use EXT4 for SD Cards:
-          description: Disable BTRFS support for SD cards for direct compatibility with SD cards formatted on stock SteamOS (Not recommended).
-          default: false
-          packages:
-          - Switch SteamOS-BTRFS config to EXT4: sudo -A ujust switch-to-ext4
   applications:
     source: yafti.screen.package
     values:

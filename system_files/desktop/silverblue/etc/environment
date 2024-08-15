@@ -1,0 +1,2 @@
+# https://gitlab.gnome.org/GNOME/mutter/-/issues/3037
+MUTTER_DEBUG_KMS_THREAD_TYPE=user

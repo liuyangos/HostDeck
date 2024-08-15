@@ -7,7 +7,7 @@ IMAGE_FLAVOR=$(jq -r '."image-flavor"' < $IMAGE_INFO)
 FEDORA_VERSION=$(jq -r '."fedora-version"' < $IMAGE_INFO)
 
 # SCRIPT VERSION
-HWS_VER=45
+HWS_VER=49
 HWS_VER_FILE="/etc/bazzite/hws_version"
 HWS_VER_RAN=$(cat $HWS_VER_FILE)
 
@@ -48,6 +48,15 @@ if /usr/libexec/hwsupport/valve-hardware; then
     else
       NEEDED_KARGS+=("--append-if-missing=amdgpu.gttsize=8128")
     fi
+  fi
+
+  echo "Turning off pstate for power consumption reasons"
+  if [[ $KARGS =~ "amd_pstate=passive" ]]; then
+    NEEDED_KARGS+=("--delete-if-present=amd_pstate=passive")
+  fi
+
+  if [[ ! $KARGS =~ "amd_pstate" ]]; then
+    NEEDED_KARGS+=("--append-if-missing=amd_pstate=disable")
   fi
 fi
 
@@ -134,6 +143,11 @@ if [[ ! $KARGS =~ "disable_ertm" ]]; then
   NEEDED_KARGS+=("--append-if-missing=bluetooth.disable_ertm=1")
 fi
 
+if [[ ! $KARGS =~ "preempt" ]]; then
+  echo "Adding needed kargs for full preemption"
+  NEEDED_KARGS+=("--append-if-missing=preempt=full")
+fi
+
 if [[ $KARGS =~ "nomodeset" ]]; then
   echo "Removing nomodeset"
   NEEDED_KARGS+=("--delete-if-present=nomodeset")
@@ -147,7 +161,7 @@ else
   echo "No karg changes needed"
 fi
 
-if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" || $IMAGE_NAME =~ "framegame" ]]; then
+if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" ]]; then
   if /usr/libexec/hwsupport/valve-hardware; then
     if [[ ":Jupiter:" =~ ":$SYS_ID:" ]]; then
       RESOLUTION=$(lshw -json -c display | jq -r .[]."configuration"."resolution")
@@ -159,6 +173,9 @@ if [[ $IMAGE_NAME =~ "deck" || $IMAGE_NAME =~ "ally" || $IMAGE_NAME =~ "framegam
         systemctl disable --now jupiter-biosupdate.service
       fi
     fi
+
+    # Ensure SCX service is disabled for now.
+    systemctl disable --now scx.service
 
     systemctl enable --now jupiter-fan-control.service
     systemctl enable --now vpower.service
@@ -225,6 +242,7 @@ fi
 if [[ ":ROG Ally RC71L:" =~ ":$SYS_ID:"  ]]; then
   echo 0 | sudo tee /sys/devices/platform/asus-nb-wmi/mcu_powersave
 elif [[ ":ROG Ally X RC72LA:" =~ ":$SYS_ID:" ]]; then
+  echo 0 | sudo tee /sys/devices/platform/asus-nb-wmi/mcu_powersave
   modprobe -r amd_pmf
   echo "blacklist amd_pmf" | sudo tee /etc/modprobe.d/hhd-blacklist.conf
 fi

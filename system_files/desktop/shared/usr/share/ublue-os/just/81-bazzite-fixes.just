@@ -1,11 +1,5 @@
 # vim: set ft=make :
 
-# Fix the default Steam config to improve download speeds
-fix-steam-download-speed:
-    mkdir -p $HOME/.local/share/Steam
-    rm -f $HOME/.local/share/Steam/steam_dev.cfg
-    bash -c 'printf "@nClientDownloadEnableHTTP2PlatformLinux 0\n@fDownloadRateImprovementToAddAnotherConnection 1.0\n" > $HOME/.local/share/Steam/steam_dev.cfg'
-
 alias patch-gmod := fix-gmod
 
 # Patch GMod's 64-bit beta to work properly on Linux (https://github.com/solsticegamestudios/GModCEFCodecFix)
@@ -27,3 +21,30 @@ fix-proton-hang:
     for PROG in "${PROTONCORE[@]}"; do
       killall -9 "$PROG"
     done
+
+# Reset the Steam folder back to a fresh state
+fix-reset-steam:
+    #!/usr/bin/bash
+    source /usr/lib/ujust/ujust.sh
+    STEAMPATH="$HOME/.local/share/Steam"
+    # Get a list of the contents of steams top level directory except a list of folders/files we can skip to avoid losing data
+    STEAMFILES=$(ls ~/.local/share/Steam/ | grep -vP "(userdata|compatibilitytools\.d|config|controller_base|steamapps|music)")
+    echo "This script will ${b}remove${n} a bunch of files from $STEAMPATH and sign you out of steam!"
+    echo "However your games, music, saves, controller profiles and compatibilitytools/custom-proton will not be touched."
+    echo "To cancel and abort this operation press CTRL+C now, to continue press ENTER."
+    read i
+    killall -9 steam
+    sleep 1
+    echo "Resetting Steam to a freshly installed state."
+    # Loop through each file and process it
+    for STEAMFILE in $STEAMFILES
+    do
+      if [ -d "$STEAMPATH/$STEAMFILE" ]; then
+        rm -rv "$STEAMPATH/$STEAMFILE"
+      elif [ -f "$STEAMPATH/$STEAMFILE" ]; then
+        rm -v "$STEAMPATH/$STEAMFILE"
+      fi
+    done
+    sleep 1
+    bazzite-steam &
+    exit 0

@@ -23,6 +23,8 @@ Patch6:         priv-write.patch
 Patch7:         biosupdate.patch
 Patch8:         gnome.patch
 Patch9:         fstrim.patch
+Patch10:        ntfs.patch
+Patch11:        more-time.patch
 
 Requires:       jq
 
