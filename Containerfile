@@ -12,8 +12,8 @@ ARG CODE_NAME="${CODE_NAME:-Holographic}"
 ARG BASE_BUILD_TIME="${BASE_BUILD_TIME:-20240716}"
 ARG BASE_FSYNC_VERSION="${BASE_FSYNC_VERSION:-6.9.8}"
 
-FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods
-FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods-extra
+FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} AS akmods
+FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} AS akmods-extra
 FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION} AS fsync
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS bazzite
@@ -231,7 +231,6 @@ RUN sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo
         /tmp/akmods-rpms/kmods/*wl*.rpm \
         /tmp/akmods-rpms/kmods/*gcadapter_oc*.rpm \
         /tmp/akmods-rpms/kmods/*nct6687*.rpm \
-        /tmp/akmods-rpms/kmods/*evdi*.rpm \
         /tmp/akmods-rpms/kmods/*zenergy*.rpm \
         /tmp/akmods-rpms/kmods/*vhba*.rpm \
         /tmp/akmods-rpms/kmods/*ayaneo-platform*.rpm \
