@@ -1,34 +1,12 @@
-name: Build Bazzite
+name: build image
 on:
-  schedule:
-    - cron: '40 4 * * 2,5' # 4:40 utc tues thurs
   pull_request:
     branches:
-      - testing
-      - unstable
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'installer/**'
-      - 'repo_content/**'
-      - 'spec_files/**'
-      - 'post_install_files/**'
-      - 'press_kit/**'
-      - '.github/workflows/build_iso.yml'
-  push:
-    branches:
-      - testing
-      - unstable
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'repo_content/**'
-      - 'spec_files/**'
-      - 'post_install_files/**'
-      - 'press_kit/**'
-      - '.github/workflows/build_iso.yml'
-  merge_group:
+      - main
+  schedule:
+    - cron: '05 10 * * *'  # 10:05am UTC everyday
   workflow_dispatch:
+
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
@@ -49,9 +27,9 @@ jobs:
       fail-fast: false
       matrix:
         base_image_flavor: [main]
-        base_name: [bazzite, bazzite-deck, bazzite-nvidia]
-        base_image_name: [kinoite, silverblue]
-        target_image_flavor: [main, asus]
+        base_name: [bazzite]
+        base_image_name: [kinoite]
+        target_image_flavor: [main]
         fedora_version: [40]
         include:
           - fedora_version: 40
@@ -303,12 +281,3 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           echo "${{ toJSON(steps.push.outputs) }}"
-
-  build_iso:
-    name: build iso
-    needs: [push-ghcr]
-    if: github.ref_name == 'testing'
-    # Eventually would be nice for building images in PRs
-    #if: ${{ endsWith(github.event.pull_request.title, '[ISO]') }}
-    uses: ./.github/workflows/build_iso.yml
-    secrets: inherit
