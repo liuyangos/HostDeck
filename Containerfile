@@ -15,7 +15,7 @@ FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION} AS akmods-extra
 FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION} AS fsync
 
-FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS hostdeck
+FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS bazzite
 
 ARG IMAGE_NAME="${IMAGE_NAME:-bazzite}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
@@ -704,6 +704,18 @@ RUN rm -f /etc/profile.d/toolbox.sh && \
     /usr/libexec/containerbuild/cleanup.sh && \
     mkdir -p /var/tmp && chmod 1777 /var/tmp && \
     ostree container commit
+
+FROM bazzite AS bazzite-deck
+
+ARG IMAGE_NAME="${IMAGE_NAME:-bazzite-deck}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
+ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
+ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
+ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG VERSION_TAG="${VERSION_TAG}"
+ARG VERSION_PRETTY="${VERSION_PRETTY}"
 
 COPY system_files/deck/shared system_files/deck/${BASE_IMAGE_NAME} /
 
