@@ -77,7 +77,6 @@ jobs:
         with:
           images: |
             ${{ env.MY_IMAGE_NAME }}
-
           labels: |
             io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository }}/main/README.md
             org.opencontainers.image.description=${{ env.MY_IMAGE_DESC }}
@@ -86,17 +85,12 @@ jobs:
       # Build image using Buildah action
       - name: Build Image
         id: build_image
-        uses: redhat-actions/buildah-build@v2
-        with:
-          containerfiles: |
-            ./Containerfile
-          # Postfix image name with -custom to make it a little more descriptive
-          # Syntax: https://docs.github.com/en/actions/learn-github-actions/expressions#format
-          image: ${{ env.MY_IMAGE_NAME }}
-          tags: |
-            ${{ steps.generate-tags.outputs.alias_tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          oci: false
+        run: |
+          sudo buildah build \
+            --target ${{ env.MY_IMAGE_NAME }} \
+            --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
+            --build-arg IMAGE_VENDOR=${{ github.repository_owner }} \
+            --tag raw-img .
 
       # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
       # https://github.com/macbre/push-to-ghcr/issues/12
