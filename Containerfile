@@ -14,7 +14,7 @@ ARG BASE_FSYNC_VERSION="${BASE_FSYNC_VERSION:-6.9.8}"
 
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods-extra
-FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION}-${BASE_FSYNC_VERSION} AS fsync
+FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION} AS fsync
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS bazzite
 
