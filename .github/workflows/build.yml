@@ -87,7 +87,7 @@ jobs:
         id: build_image
         run: |
           sudo buildah build \
-            --target ./Containerfile
+            --target hostdeck
             --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_VENDOR=${{ github.repository_owner }} \
             --tag raw-img .
