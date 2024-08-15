@@ -150,9 +150,9 @@ jobs:
           command: |
             # pull the base images used for FROM in Containerfile so
             # we can retry on that unfortunately common failure case
-            podman pull ${{ env.IMAGE_REGISTRY }}/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}
-            podman pull ${{ env.IMAGE_REGISTRY }}/akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
-            podman pull ${{ env.IMAGE_REGISTRY }}/akmods-nvidia:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
+            podman pull ghcr.io/ublue-os/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}
+            podman pull ghcr.io/ublue-os/akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
+            podman pull ghcr.io/ublue-os/akmods-nvidia:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
 
       - name: Get source versions
         id: labels
