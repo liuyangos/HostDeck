@@ -162,7 +162,7 @@ jobs:
           attempt_delay: 15000
           command: |
             set -eo pipefail
-            skopeo inspect docker://${{ env.IMAGE_REGISTRY }}/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }} > source.json
+            skopeo inspect docker://ghcr.io/ublue-os/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }} > source.json
             ver=$(jq -r '.Labels["org.opencontainers.image.version"]' source.json)
             if [ -z "$ver" ] || [ "null" = "$ver" ]; then
               echo "inspected image version must not be empty or null"
@@ -170,7 +170,7 @@ jobs:
             fi
             echo "SOURCE_IMAGE_VERSION=$ver" >> $GITHUB_ENV
 
-            skopeo inspect docker://${{ env.IMAGE_REGISTRY }}/akmods:${{ matrix.kernel_flavor }}-${{ matrix.fedora_version }} > akmods.json
+            skopeo inspect docker://ghcr.io/ublue-os/akmods:${{ matrix.kernel_flavor }}-${{ matrix.fedora_version }} > akmods.json
             linux=$(jq -r '.Labels["ostree.linux"]' akmods.json)
             if [ -z "$linux" ] || [ "null" = "$linux" ]; then
               echo "inspected image linux version must not be empty or null"
