@@ -87,7 +87,7 @@ jobs:
         id: build_image
         run: |
           sudo buildah build \
-            --target ${{ env.MY_IMAGE_NAME }} \
+            --target .
             --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_VENDOR=${{ github.repository_owner }} \
             --tag raw-img .
