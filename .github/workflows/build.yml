@@ -142,42 +142,6 @@ jobs:
           done
           echo "alias_tags=${alias_tags[*]}" >> $GITHUB_OUTPUT
 
-      - name: Pull main and akmods images
-        uses: Wandalen/wretry.action@v3.5.0
-        with:
-          attempt_limit: 3
-          attempt_delay: 15000
-          command: |
-            # pull the base images used for FROM in Containerfile so
-            # we can retry on that unfortunately common failure case
-            podman pull ghcr.io/ublue-os/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}
-            podman pull ghcr.io/ublue-os/akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
-            podman pull ghcr.io/ublue-os/akmods-nvidia:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}
-
-      - name: Get source versions
-        id: labels
-        uses: Wandalen/wretry.action@v3.5.0
-        with:
-          attempt_limit: 3
-          attempt_delay: 15000
-          command: |
-            set -eo pipefail
-            skopeo inspect docker://ghcr.io/ublue-os/${{ matrix.base_image_name }}-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }} > source.json
-            ver=$(jq -r '.Labels["org.opencontainers.image.version"]' source.json)
-            if [ -z "$ver" ] || [ "null" = "$ver" ]; then
-              echo "inspected image version must not be empty or null"
-              exit 1
-            fi
-            echo "SOURCE_IMAGE_VERSION=$ver" >> $GITHUB_ENV
-
-            skopeo inspect docker://ghcr.io/ublue-os/akmods:${{ matrix.kernel_flavor }}-${{ matrix.fedora_version }} > akmods.json
-            linux=$(jq -r '.Labels["ostree.linux"]' akmods.json)
-            if [ -z "$linux" ] || [ "null" = "$linux" ]; then
-              echo "inspected image linux version must not be empty or null"
-              exit 1
-            fi
-            echo "KERNEL_VERSION=$linux" >> $GITHUB_ENV
-
       # Build metadata
       - name: Image Metadata
         uses: docker/metadata-action@v5
@@ -188,8 +152,6 @@ jobs:
           labels: |
             org.opencontainers.image.title=${{ env.IMAGE_NAME }}
             org.opencontainers.image.description=Bazzite is an OCI image that serves as an alternative operating system for the Steam Deck, and a ready-to-game SteamOS-like for desktop computers, living room home theater PCs, and numerous other handheld PCs.
-            org.opencontainers.image.version=${{ env.SOURCE_IMAGE_VERSION }}
-            ostree.linux=${{ env.KERNEL_VERSION }}
             io.artifacthub.package.readme-url=https://bazzite.gg/
             io.artifacthub.package.logo-url=https://raw.githubusercontent.com/ublue-os/bazzite/main/repo_content/logo.png
 
