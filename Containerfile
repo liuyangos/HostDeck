@@ -18,6 +18,7 @@ FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION}-6.10.3 AS fsync
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS grymax
 
+ARG IMAGE_NAME="${IMAGE_NAME:-grymax}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
@@ -707,6 +708,7 @@ RUN rm -f /etc/profile.d/toolbox.sh && \
 
 FROM grymax AS grymaxos
 
+ARG IMAGE_NAME="${IMAGE_NAME:-grymaxos}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
 ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
