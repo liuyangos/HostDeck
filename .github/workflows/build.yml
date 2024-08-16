@@ -52,7 +52,7 @@ jobs:
             --build-arg BASE_IMAGE_FLAVOR=main \
             --build-arg FEDORA_VERSION=40 \
             --build-arg KERNEL_FLAVOR=fsync \
-            --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
+            --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }}
           echo "$(podman images)"
           echo "$(buildah images)"
 
