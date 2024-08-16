@@ -98,23 +98,6 @@ jobs:
             --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
             --tag raw-img .
 
-      # Reprocess raw-img using rechunker which will delete it
-      - name: Run Rechunker
-        id: rechunk
-        uses: hhd-dev/rechunk@v0.8.5
-        with:
-          rechunk: 'ghcr.io/hhd-dev/rechunk:v0.8.3'
-          ref: 'raw-img'
-          prev-ref: ${{ github.event.inputs.fresh-rechunk == 'true' && '' }}
-          labels: |
-            io.artifacthub.package.readme-url=https://shzj.cc/
-            org.opencontainers.image.created=<timestamp>
-            org.opencontainers.image.description= GryMaxOs
-            org.opencontainers.image.licenses=Apache-2.0
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.universal-blue.pkg.kernel=<relver:kernel>
-            org.universal-blue.pkg.gamescope=<relver:gamescope>
-
       # Generate tags after rechunker runs and checks the primary tag is not duplicated
       # If it is, rechunk will suffix it by .1, .2, etc and put it in steps.rechunk.outputs.version
       - name: Generate tags
@@ -218,6 +201,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           containers: ${{ env.IMAGE_NAME }}
+          registry: ${{ env.IMAGE_REGISTRY }}
           registry-token: ${{ secrets.GITHUB_TOKEN }}
           signing-secret: ${{ secrets.SIGNING_SECRET }}
           tags: ${{ steps.push.outputs.outputs && fromJSON(steps.push.outputs.outputs).digest }}
