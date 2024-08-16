@@ -111,12 +111,14 @@ jobs:
           BAZZITE_VERSION="${{ matrix.bazzite_version }}"
           SHA_SHORT="${GITHUB_SHA::7}"
           BUILD_TAGS=( "${VERSION_TAG}" )
+
           # Use latest var to check if we should tag as latest
           unset LATEST
           if [[ "${{ matrix.is_latest_version }}" == "true" ]] && \
               [[ "${{ matrix.is_stable_version }}" == "true" ]]; then
                 LATEST="1"
           fi
+
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Track latest ver per PR
             if [ -n "$LATEST" ]; then
@@ -126,8 +128,10 @@ jobs:
             # Per fedora version
             BUILD_TAGS+=("${FEDORA_VERSION}-unstable")
             BUILD_TAGS+=("unstable-${FEDORA_VERSION}") # flip ver to be last
+
             # Per upstream ver
             BUILD_TAGS+=("unstable-${UPSTREAM_TAG}")
+
             if [ -n "$LATEST" ]; then
                 BUILD_TAGS+=("unstable")
             fi
@@ -135,8 +139,10 @@ jobs:
             # Per fedora version
             BUILD_TAGS+=("${FEDORA_VERSION}-testing")
             BUILD_TAGS+=("testing-${FEDORA_VERSION}") # flip ver to be last
+
             # Per upstream ver
             BUILD_TAGS+=("testing-${UPSTREAM_TAG}")
+
             if [ -n "$LATEST" ]; then
                 BUILD_TAGS+=("testing-${BAZZITE_VERSION}")
                 BUILD_TAGS+=("testing")
@@ -146,10 +152,11 @@ jobs:
             BUILD_TAGS+=("${UPSTREAM_TAG}")
             BUILD_TAGS+=("${BAZZITE_VERSION}")
             BUILD_TAGS+=("stable-${UPSTREAM_TAG}")
+
             # Per fedora version
             BUILD_TAGS+=("${FEDORA_VERSION}-stable")
             BUILD_TAGS+=("stable-${FEDORA_VERSION}") # flip ver to be last
-          
+            
             if [ -n "$LATEST" ]; then
               BUILD_TAGS+=("latest" "stable")
             fi
@@ -160,6 +167,7 @@ jobs:
               echo "${TAG}"
           done
           echo "alias_tags=${BUILD_TAGS[*]}" >> $GITHUB_OUTPUT
+
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
