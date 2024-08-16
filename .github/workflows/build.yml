@@ -9,6 +9,7 @@ on:
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_NAME: bazzite-deck
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -39,8 +40,8 @@ jobs:
         id: build_image
         run: |
           sudo buildah build \
-            --target bazzite-deck \
-            --build-arg IMAGE_NAME=bazzite-deck \
+            --target ${{ env.IMAGE_NAME }} \
+            --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_FLAVOR=main \
             --build-arg IMAGE_VENDOR=${{ env.IMAGE_REGISTRY }} \
             --build-arg BASE_IMAGE_NAME=kinoite \
@@ -92,8 +93,8 @@ jobs:
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
-          podman image ls
-          IMAGE=raw-img
+          podman image ls  >> $GITHUB_OUTPUT
+          IMAGE=${{ steps.build_image.outputs.output }}
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
             podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
           done
