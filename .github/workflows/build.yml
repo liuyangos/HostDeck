@@ -101,7 +101,7 @@ jobs:
           FG="$(podman images)"
           echo "${FG}"
           echo "$(pwd)"
-          IMAGE=localhost/raw-img:latest
+          IMAGE=raw-img:latest
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
             podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
           done
