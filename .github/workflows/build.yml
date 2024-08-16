@@ -53,6 +53,8 @@ jobs:
             --build-arg FEDORA_VERSION=40 \
             --build-arg KERNEL_FLAVOR=fsync \
             --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
+          echo "$(podman images)"
+          echo "$(buildah images)"
 
       - name: Generate tags
         id: generate-tags
@@ -97,9 +99,8 @@ jobs:
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
-          FG="$(podman images)"
-          echo "${FG}"
           echo "$(pwd)"
+          echo "$(podman images)"
           echo "$(buildah images)"
           IMAGE=raw-img:latest
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
