@@ -53,7 +53,6 @@ jobs:
             --build-arg FEDORA_VERSION=40 \
             --build-arg KERNEL_FLAVOR=fsync \
             --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
-            --tag raw-img .
 
       - name: Generate tags
         id: generate-tags
