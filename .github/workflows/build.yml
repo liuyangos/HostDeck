@@ -25,6 +25,10 @@ jobs:
       packages: write
       id-token: write
     steps:
+      - name: Define env.SHA_HEAD_SHORT
+        run: |
+          echo "SHA_HEAD_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v4
@@ -48,6 +52,7 @@ jobs:
             --build-arg BASE_IMAGE_FLAVOR=main \
             --build-arg FEDORA_VERSION=40 \
             --build-arg KERNEL_FLAVOR=fsync \
+            --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
             --tag raw-img .
 
       - name: Generate tags
@@ -93,8 +98,8 @@ jobs:
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
-          podman image ls  >> $GITHUB_OUTPUT
-          IMAGE=${{ steps.build_image.outputs.output }}
+          podman images >> $GITHUB_OUTPUT
+          IMAGE=${{ env.SHA_HEAD_SHORT }}
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
             podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
           done
