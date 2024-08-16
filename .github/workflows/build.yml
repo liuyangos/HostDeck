@@ -52,7 +52,7 @@ jobs:
             --build-arg BASE_IMAGE_FLAVOR=main \
             --build-arg FEDORA_VERSION=40 \
             --build-arg KERNEL_FLAVOR=fsync \
-            --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }}
+            --build-arg SHA_HEAD_SHORT=${{ env.SHA_HEAD_SHORT }} \
             --build-arg VERSION_TAG=v3.6-40.20240815.0 \
             --build-arg VERSION_PRETTY="Stable (v3.6, F40.20240815.0)" \
             --tag raw-img .
