@@ -98,9 +98,7 @@ jobs:
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
-          XXX="$(podman images)"
-          echo "XXX=${XXX}" >> $GITHUB_OUTPUT
-          IMAGE=${{ env.SHA_HEAD_SHORT }}
+          IMAGE=localhost/raw-img:latest
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
             podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
           done
