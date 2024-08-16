@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   push-ghcr:
-    name: Make
+    name: Build and push image
     runs-on: ubuntu-24.04
     continue-on-error: false
     permissions:
@@ -92,7 +92,8 @@ jobs:
       # Pull oci-dir image, remove oci dir to make space, and then tag appropriately
       - name: Load in podman and tag
         run: |
-          IMAGE=localhost/raw-img
+          podman image ls
+          IMAGE=raw-img
           for tag in ${{ steps.generate-tags.outputs.alias_tags }}; do
             podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
           done

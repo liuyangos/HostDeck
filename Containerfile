@@ -12,32 +12,4 @@ ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 ARG BASE_BUILD_TIME="${BASE_BUILD_TIME:-20240815}"
 
-FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods
-FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS akmods-extra
-FROM ghcr.io/ublue-os/fsync-kernel:${FEDORA_MAJOR_VERSION}-6.10.3 AS fsync
-
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}-${BASE_BUILD_TIME} AS bazzite-deck
-
-ARG IMAGE_NAME="${IMAGE_NAME:-bazzite}"
-ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
-ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
-ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
-ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
-ARG JUPITER_FIRMWARE_VERSION="${JUPITER_FIRMWARE_VERSION:-jupiter-20240813.1}"
-ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
-ARG VERSION_TAG="${VERSION_TAG}"
-ARG VERSION_PRETTY="${VERSION_PRETTY}"
-
-COPY system_files/desktop/shared system_files/desktop/${BASE_IMAGE_NAME} /
-
-# Update packages that commonly cause build issues
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=updates \
-        vulkan-loader \
-        || true && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
