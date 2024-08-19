@@ -31,7 +31,7 @@ jobs:
         id: build
         with:
           arch: x86_64
-          image_name: grymaxos
+          image_name: hostdeck
           image_repo: ${{ steps.registry_case.outputs.lowercase }}
           variant: "Kinoite"
           version: 40
