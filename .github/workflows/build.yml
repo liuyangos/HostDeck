@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-  IMAGE_NAME: grymaxos
+  IMAGE_NAME: hostdeck
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -44,7 +44,7 @@ jobs:
         id: build_image
         run: |
           sudo buildah build \
-            --target ${{ env.IMAGE_NAME }} \
+            --target grymaxos \
             --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_FLAVOR=main \
             --build-arg IMAGE_VENDOR=${{ env.IMAGE_REGISTRY }} \
