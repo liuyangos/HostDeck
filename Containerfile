@@ -457,7 +457,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/rpmfusion-nonfree-updates-testing.repo && \
     sed -i '0,/enabled=0/s//enabled=1/' /etc/yum.repos.d/fedora-updates.repo && \
     rpm-ostree install \
-        lutris \
+        #lutris \
         umu-launcher \
         wine-core.x86_64 \
         wine-core.i686 \
@@ -593,7 +593,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         rocm-hip \
         rocm-opencl \
         rocm-clinfo \
-        waydroid \
+        #waydroid \
         cage \
         wlr-randr && \
     sed -i~ -E 's/=.\$\(command -v (nft|ip6?tables-legacy).*/=/g' /usr/lib/waydroid/data/scripts/waydroid-net.sh && \
