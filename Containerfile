@@ -798,6 +798,11 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --from repo=copr:copr.fedorainfracloud.org:kylegospo:bazzite \
         upower \
         upower-libs && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=copr:copr.fedorainfracloud.org:liuyangos:grymax \
+        jupiter-hw-support-btrfs \
+        steamdeck-kde-presets && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
@@ -809,16 +814,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree install \
         gamescope-session-plus \
         gamescope-session-steam && \
-    /usr/libexec/containerbuild/cleanup.sh && \
-    ostree container commit
-
-# replace for grymax
-RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    rpm-ostree override replace \
-    --experimental \
-    --from repo=copr:copr.fedorainfracloud.org:liuyangos:grymax \
-        jupiter-hw-support-btrfs \
-        steamdeck-kde-presets \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
