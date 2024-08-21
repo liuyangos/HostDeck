@@ -549,7 +549,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             ptyxis \
             nautilus-open-any-terminal \
             nautilus-gsconnect \
-            steamdeck-backgrounds \
+            #steamdeck-backgrounds \
             gnome-randr-rust \
             gnome-shell-extension-user-theme \
             gnome-shell-extension-gsconnect \
