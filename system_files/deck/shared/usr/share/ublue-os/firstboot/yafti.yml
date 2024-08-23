@@ -1,4 +1,4 @@
-title: Bazzite Portal
+title: GryMaxOs Portal
 properties:
   mode: "run-once"
   save_state: "always"
@@ -6,14 +6,14 @@ screens:
   first-screen:
     source: yafti.screen.title
     values:
-      title: "Welcome to Bazzite (Handheld & HTPC Edition)"
+      title: "Welcome to GryMaxOs"
       icon: "/usr/share/ublue-os/bazzite/logo.svg"
       description: |
         Configure your system to get started. This utility can be re-opened at any time, so don't feel like you have to get it perfect your first go-through.
-  configure-bazzite:
+  configure-grymaxos:
     source: yafti.screen.package
     values:
-      title: Setting up Bazzite
+      title: Setting up GryMaxOs
       show_terminal: true
       package_manager: yafti.plugin.run
       groups:
@@ -226,13 +226,7 @@ screens:
       links:
       - "Install More Applications":
           run: /usr/bin/plasma-discover
-      - "Documentation":
-          run: /usr/bin/xdg-open https://docs.bazzite.gg
-      - "Forums":
-          run: /usr/bin/xdg-open https://universal-blue.discourse.group/c/bazzite/5
-      - "Join the Discord Community":
-          run: /usr/bin/xdg-open https://discord.gg/XjG48C7VHx
       - "Reboot now":
           run: systemctl reboot
       description: |
-        Thank you for trying Bazzite (Handheld & HTPC Edition). Please reboot to apply changes made by this setup utility.
+        Thank you for trying GryMaxOs (Handheld & HTPC Edition). Please reboot to apply changes made by this setup utility.
