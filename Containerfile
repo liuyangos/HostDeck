@@ -472,12 +472,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         latencyflex-vulkan-layer \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
-        obs-vkcapture.x86_64 \
-        libobs_vkcapture.x86_64 \
-        libobs_glcapture.x86_64 \
-        obs-vkcapture.i686 \
-        libobs_vkcapture.i686 \
-        libobs_glcapture.i686 \
         mangohud.x86_64 \
         mangohud.i686 && \
     ln -s wine32 /usr/bin/wine && \
@@ -527,7 +521,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             fcitx5-chinese-addons \
             fcitx5-hangul \
             ptyxis && \
-        git clone https://github.com/catsout/wallpaper-engine-kde-plugin.git --depth 1 --branch qt6 /tmp/wallpaper-engine-kde-plugin && \
+        git clone https://github.com/catsout/wallpaper-engine-kde-plugin.git --depth 1 --branch main /tmp/wallpaper-engine-kde-plugin && \
         kpackagetool6 --type=Plasma/Wallpaper --global --install /tmp/wallpaper-engine-kde-plugin/plugin && \
         rm -rf /tmp/wallpaper-engine-kde-plugin && \
         sed -i '/<entry name="launchers" type="StringList">/,/<\/entry>/ s/<default>[^<]*<\/default>/<default>applications:org.gnome.Ptyxis.desktop,applications:org.kde.discover.desktop,preferred:\/\/filemanager<\/default>/' /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml && \
@@ -573,7 +567,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             gnome-tour \
             gnome-extensions-app \
             gnome-terminal-nautilus \
-            gnome-initial-setup && \
+            gnome-initial-setup \
+            gnome-shell-extension-background-logo \
+            gnome-shell-extension-apps-menu && \
         mkdir -p /tmp/tilingshell && \
         curl -s https://api.github.com/repos/domferr/tilingshell/releases/latest | \
             jq -r '.assets | sort_by(.created_at) | .[] | select (.name|test("^tilingshell@.*zip$")) | .browser_download_url' | \
