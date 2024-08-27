@@ -799,6 +799,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:liuyangos:grymax \
+        hhd-ui \
         jupiter-hw-support-btrfs \
         steamdeck-kde-presets && \
     /usr/libexec/containerbuild/cleanup.sh && \
