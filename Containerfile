@@ -472,6 +472,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         latencyflex-vulkan-layer \
         vkBasalt.x86_64 \
         vkBasalt.i686 \
+        obs-vkcapture.x86_64 \
+        libobs_vkcapture.x86_64 \
+        libobs_glcapture.x86_64 \
+        obs-vkcapture.i686 \
+        libobs_vkcapture.i686 \
+        libobs_glcapture.i686 \
         mangohud.x86_64 \
         mangohud.i686 && \
     ln -s wine32 /usr/bin/wine && \
@@ -499,7 +505,8 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             qt \
             krdp && \
         rpm-ostree override remove \
-            plasma-welcome && \
+            plasma-welcome \
+            konsole && \
         rpm-ostree override replace \
         --experimental \
         --from repo=copr:copr.fedorainfracloud.org:ublue-os:staging \
@@ -527,11 +534,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         sed -i '/<entry name="launchers" type="StringList">/,/<\/entry>/ s/<default>[^<]*<\/default>/<default>applications:org.gnome.Ptyxis.desktop,applications:org.kde.discover.desktop,preferred:\/\/filemanager<\/default>/' /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml && \
         sed -i '/<entry name="favorites" type="StringList">/,/<\/entry>/ s/<default>[^<]*<\/default>/<default>steam.desktop,systemsettings.desktop,org.kde.dolphin.desktop,org.gnome.Ptyxis.desktop,org.kde.discover.desktop<\/default>/' /usr/share/plasma/plasmoids/org.kde.plasma.kickoff/contents/config/main.xml && \
         sed -i 's@\[Desktop Action new-window\]@\[Desktop Action new-window\]\nX-KDE-Shortcuts=Ctrl+Alt+T@g' /usr/share/applications/org.gnome.Ptyxis.desktop && \
+        sed -i '/^Comment/d' /usr/share/applications/org.gnome.Ptyxis.desktop && \
         sed -i 's@Exec=ptyxis@Exec=kde-ptyxis@g' /usr/share/applications/org.gnome.Ptyxis.desktop && \
         sed -i 's@Keywords=@Keywords=konsole;console;@g' /usr/share/applications/org.gnome.Ptyxis.desktop && \
         cp /usr/share/applications/org.gnome.Ptyxis.desktop /usr/share/kglobalaccel/org.gnome.Ptyxis.desktop && \
-        sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.kde.konsole.desktop && \
-        rm -f /usr/share/kglobalaccel/org.kde.konsole.desktop && \
         setcap 'cap_net_raw+ep' /usr/libexec/ksysguard/ksgrd_network_helper \
     ; else \
         rpm-ostree override replace \
@@ -566,6 +572,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             gnome-classic-session-xsession \
             gnome-tour \
             gnome-extensions-app \
+            gnome-terminal \
             gnome-terminal-nautilus \
             gnome-initial-setup \
             gnome-shell-extension-background-logo \
@@ -576,7 +583,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             wget -qi - -O /tmp/tilingshell/tilingshell@ferrarodomenico.com.zip && \
         unzip /tmp/tilingshell/tilingshell@ferrarodomenico.com.zip -d /usr/share/gnome-shell/extensions/tilingshell@ferrarodomenico.com && \
         rm -rf /tmp/tilingshell && \
-        sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.Terminal.desktop && \
         sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/org.gnome.SystemMonitor.desktop && \
         systemctl enable dconf-update.service \
     ; fi && \
@@ -799,7 +805,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree override replace \
     --experimental \
     --from repo=copr:copr.fedorainfracloud.org:liuyangos:grymax \
-        hhd-ui \
         jupiter-hw-support-btrfs \
         steamdeck-kde-presets && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -824,6 +829,7 @@ RUN /usr/libexec/containerbuild/image-info && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
         sed -i 's/Exec=.*/Exec=systemctl start return-to-gamemode.service/' /etc/skel/Desktop/Return.desktop \
     ; fi && \
+    rm -rf /etc/skel/Desktop/Return.desktop \
     sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nNoDisplay=true@g' /usr/share/applications/input-remapper-gtk.desktop && \
     cp "/usr/share/ublue-os/firstboot/yafti.yml" "/etc/yafti.yml" && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
