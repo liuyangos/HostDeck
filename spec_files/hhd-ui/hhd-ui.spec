@@ -8,6 +8,7 @@ Summary:        Configurator interface for Handheld Daemon.
 License:        GPL-3.0-or-later
 URL:            https://github.com/hhd-dev/hhd-ui
 Source0:        %{URL}/archive/v%{version}.tar.gz
+#Source2:       bazzite.svg
 
 BuildArch:      x86_64
 
@@ -21,6 +22,7 @@ Configurator interface for Handheld Daemon.
 
 %prep
 %setup -q -n %{name}-%{version}
+cp %{SOURCE2} src/assets/distro/bazzite.svg
 
 %build
 VERSION=$(cat package.json | grep -E '"version": "[0-9\.]+"' -o | grep -E "[0-9\.]+" -o)
