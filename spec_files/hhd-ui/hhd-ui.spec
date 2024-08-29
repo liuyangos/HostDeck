@@ -8,7 +8,7 @@ Summary:        Configurator interface for Handheld Daemon.
 License:        GPL-3.0-or-later
 URL:            https://github.com/hhd-dev/hhd-ui
 Source0:        %{URL}/archive/v%{version}.tar.gz
-#Source2:       bazzite.svg
+Source2:        bazzite.svg
 
 BuildArch:      x86_64
 
