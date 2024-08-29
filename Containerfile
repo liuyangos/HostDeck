@@ -16,7 +16,7 @@ FROM ghcr.io/ublue-os/${KERNEL_FLAVOR}-kernel:${FEDORA_MAJOR_VERSION}-${KERNEL_V
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS akmods-extra
 
-FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}-20240815 AS hostdeck
+FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS hostdeck
 
 ARG IMAGE_NAME="${IMAGE_NAME:-grymax}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
@@ -203,10 +203,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         echo "Will install ${KERNEL_FLAVOR} kernel" && \
         rpm-ostree override replace \
         --experimental \
-            /tmp/fsync-rpms/kernel-[0-9]*.rpm \
-            /tmp/fsync-rpms/kernel-core-*.rpm \
-            /tmp/fsync-rpms/kernel-modules-*.rpm \
-            /tmp/fsync-rpms/kernel-uki-virt-*.rpm \
+            /etc/kerneldemo/kernel-[0-9]*.rpm \
+            /etc/kerneldemo/kernel-core-*.rpm \
+            /etc/kerneldemo/kernel-modules-*.rpm \
+            /etc/kerneldemo/kernel-uki-virt-*.rpm \
     ; else \
         echo "will use kernel from ${KERNEL_FLAVOR} images" \
     ; fi && \
