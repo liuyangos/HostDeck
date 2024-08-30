@@ -55,5 +55,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ; fi && \
     ls -l /boot && \
     ls -l /usr/lib/modules && \
+    sbverify -l /usr/lib/modules/6.10.4-201.fsync.fc40.x86_64/vmlinuz && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
