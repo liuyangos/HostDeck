@@ -43,6 +43,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         ls -l /tmp/fsync-rpms/ && \
           ls -l /boot && \
             ls -l /usr/lib/modules && \
+            sbverify -l /usr/lib/modules/6.10.6-200.fc40.x86_64/vmlinuz && \
         rpm-ostree override replace \
         --experimental \
             /tmp/fsync-rpms/kernel-[0-9]*.rpm \
@@ -52,8 +53,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ; else \
         echo "will use kernel from ${KERNEL_FLAVOR} images" \
     ; fi && \
-    rpm-ostree install \
-        scx-scheds && \
     ls -l /boot && \
     ls -l /usr/lib/modules && \
     /usr/libexec/containerbuild/cleanup.sh && \
