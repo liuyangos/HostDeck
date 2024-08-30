@@ -203,10 +203,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         echo "Will install ${KERNEL_FLAVOR} kernel" && \
         rpm-ostree override replace \
         --experimental \
-            /etc/kerneldemo/kernel-[0-9]*.rpm \
-            /etc/kerneldemo/kernel-core-*.rpm \
-            /etc/kerneldemo/kernel-modules-*.rpm \
-            /etc/kerneldemo/kernel-uki-virt-*.rpm \
+            /tmp/fsync-rpms/kernel-[0-9]*.rpm \
+            /tmp/fsync-rpms/kernel-core-*.rpm \
+            /tmp/fsync-rpms/kernel-modules-*.rpm \
+            /tmp/fsync-rpms/kernel-uki-virt-*.rpm \
     ; else \
         echo "will use kernel from ${KERNEL_FLAVOR} images" \
     ; fi && \
