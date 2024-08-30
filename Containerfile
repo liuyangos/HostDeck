@@ -39,7 +39,10 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     rpm-ostree cliwrap install-to-root / && \
     if [[ "${KERNEL_FLAVOR}" =~ "fsync" ]]; then \
         echo "Will install ${KERNEL_FLAVOR} kernel" && \
+        dnf install -y sbsigntools && \
         ls -l /tmp/fsync-rpms/ && \
+          ls -l /boot && \
+            ls -l /usr/lib/modules && \
         rpm-ostree override replace \
         --experimental \
             /tmp/fsync-rpms/kernel-[0-9]*.rpm \
@@ -51,5 +54,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     ; fi && \
     rpm-ostree install \
         scx-scheds && \
+    ls -l /boot && \
+    ls -l /usr/lib/modules && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
