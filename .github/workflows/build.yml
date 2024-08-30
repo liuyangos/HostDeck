@@ -44,7 +44,7 @@ jobs:
         id: build_image
         run: |
           sudo buildah build \
-            --target hostdeckos \
+            --target hostdeck \
             --build-arg IMAGE_NAME=${{ env.IMAGE_NAME }} \
             --build-arg IMAGE_FLAVOR=main \
             --build-arg IMAGE_VENDOR=${{ env.IMAGE_REGISTRY }} \
