@@ -35,7 +35,7 @@ jobs:
           image_repo: ${{ steps.registry_case.outputs.lowercase }}
           variant: "Kinoite"
           version: 40
-          image_tag: latest
+          image_tag: 20240827
       - name: Move ISOs to Upload Directory
         id: upload-directory
         shell: bash
